@@ -2,8 +2,11 @@
 
 local BasePlugin = require "kong.plugins.base_plugin"
 local aws_v4 = require "kong.plugins.aws-lambda.v4"
+local singletons = require "kong.singletons"
 local responses = require "kong.tools.responses"
+local constants = require "kong.constants"
 local utils = require "kong.tools.utils"
+local meta = require "kong.meta"
 local http = require "resty.http"
 local cjson = require "cjson.safe"
 local public_utils = require "kong.tools.public"
@@ -148,6 +151,10 @@ function AWSLambdaHandler:access(conf)
 
   else
     ngx.status = res.status
+  end
+
+  if singletons.configuration.enabled_headers[constants.HEADERS.VIA] then
+    ngx.header["Via"] = meta._SERVER_TOKENS
   end
 
   -- Send response to client

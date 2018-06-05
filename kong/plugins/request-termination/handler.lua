@@ -1,8 +1,8 @@
 local BasePlugin = require "kong.plugins.base_plugin"
+local singletons = require "kong.singletons"
 local responses = require "kong.tools.responses"
+local constants = require "kong.constants"
 local meta = require "kong.meta"
-
-local server_header = meta._NAME .. "/" .. meta._VERSION
 
 local RequestTerminationHandler = BasePlugin:extend()
 
@@ -27,7 +27,13 @@ function RequestTerminationHandler:access(conf)
       content_type = "application/json; charset=utf-8";
     end
     ngx.header["Content-Type"] = content_type
-    ngx.header["Server"] = server_header
+
+    if singletons.configuration.enabled_headers[constants.HEADERS.SERVER] then
+      ngx.header["Server"] = meta._SERVER_TOKENS
+
+    else
+      ngx.header["Server"] = nil
+    end
 
     ngx.say(body)
 
